@@ -1,0 +1,11 @@
+Weather alerts to Slack
+
+Implementation:
+make a config.txt file like this ---
+
+[accuweather]
+apikey = insert_your_api_key
+postalcode = 90210
+
+[slack]
+webhook = https://hooks.slack.com/services/your_url_info_here
