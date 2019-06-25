@@ -120,13 +120,14 @@ def main():
     else:
         m = f'Not much going on for rain or no change {max_of_probs}% for {max_of_liquids} inches'
         logger.info(m)
-        requests.post(slack_webhook, json={"text": m})
+        if logger.isEnabledFor(logging.DEBUG):
+            requests.post(slack_webhook, json={"text": m})
 
-        mystring = ''
-        for line in forecast:
-            mystring += line + '\n'
-        requests.post(slack_webhook, json={"text": mystring})
-        logger.debug(mystring)
+            mystring = ''
+            for line in forecast:
+                mystring += line + '\n'
+            requests.post(slack_webhook, json={"text": mystring})
+            logger.debug(mystring)
 
 if __name__ == "__main__":
     logzero.loglevel(logging.INFO)
