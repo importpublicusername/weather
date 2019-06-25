@@ -29,14 +29,19 @@ state_location = 'location.pickle'
 
 def checkrain(max_of_probs, max_of_liquids):
     msgs = []
-    if max_of_probs > 55 and max_of_probs < 75:
+    if max_of_probs > 52 and max_of_probs < 75:
         msg = f'OK chance of rain; max prob {max_of_probs}%, max {max_of_liquids} inches'
         logger.info(msg)
         msgs.append(msg)
     elif max_of_probs >= 75:
-        msg = f'really good change for precip- {max_of_probs}%, max {max_of_liquids} inches'
+        msg = f'Really good change for precip- {max_of_probs}%, max {max_of_liquids} inches'
         logger.info(msg)
         msgs.append(msg)
+    elif max_of_probs == 0:
+        msg = f'It is bone dry out there for the next 12 hours at least'
+        logger.info(msg)
+        msgs.append(msg)
+        writepickle(None, state_file)
     else:
         logger.debug(f'not likely for rain in next 12 hours {max_of_probs}')
         writepickle(None, state_file)
