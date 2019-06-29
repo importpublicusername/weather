@@ -101,7 +101,7 @@ def main():
 
     if state:
         state_prob, state_liquid = state
-        if abs(state_prob - max_of_probs) > 10 or abs(max_of_liquids - state_liquid) > .1:
+        if abs(state_prob - max_of_probs) > 10 or abs(max_of_liquids - state_liquid) > .1 or max_of_probs > 70:
             logger.debug('things changed enough to report')
             msgs = checkrain(max_of_probs, max_of_liquids)
         else:
