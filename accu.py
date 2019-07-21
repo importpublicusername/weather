@@ -100,9 +100,12 @@ def main():
     logger.debug(f'avg of probs {avg_of_probs} avg of inches {avg_of_liquids}')
 
     if state:
-        state_prob, state_liquid = state
+        state_prob, state_liquid, lastcheck = state
         if abs(state_prob - max_of_probs) > 10 or abs(max_of_liquids - state_liquid) > .1 or max_of_probs > 70:
             logger.debug('things changed enough to report')
+            msgs = checkrain(max_of_probs, max_of_liquids)
+        elif datetime.datetime.now() - datetime.timedelta(minutes=90) > lastcheck:
+            logger.debug('it has been a while since last report - give an update')
             msgs = checkrain(max_of_probs, max_of_liquids)
         else:
             logger.debug("things didn't change that much from last report")
@@ -114,7 +117,7 @@ def main():
     logger.debug(f'msgs {msgs}')
 
     if len(msgs) > 0:
-        writepickle([max_of_probs, max_of_liquids], state_file) #save state of the last alert
+        writepickle([max_of_probs, max_of_liquids, datetime.datetime.now()], state_file) #save state of the last alert
         logger.info(f'sending msgs {msgs}')
         requests.post(slack_webhook, json={"text": str(msgs)})
         mystring = ''
