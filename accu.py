@@ -1,13 +1,17 @@
+import botocore.vendored.requests as requests
+
 #system libraries
 import configparser
 from statistics import mean
 import datetime
 import logging
+logger = logging.getLogger()
+logger.setLevel(20)
 
 #third party
-import requests
-import logzero
-from logzero import logger
+#import requests
+#import logzero
+#from logzero import logging
 
 #local file
 from dill import writepickle
@@ -104,7 +108,7 @@ def main():
         if abs(state_prob - max_of_probs) > 10 or abs(max_of_liquids - state_liquid) > .1 or max_of_probs > 70:
             logger.debug('things changed enough to report')
             msgs = checkrain(max_of_probs, max_of_liquids)
-        elif datetime.datetime.now() - datetime.timedelta(minutes=90) > lastcheck:
+        elif datetime.datetime.now() - datetime.timedelta(minutes=95) > lastcheck and max_of_probs > 0:
             logger.debug('it has been a while since last report - give an update')
             msgs = checkrain(max_of_probs, max_of_liquids)
         else:
@@ -119,7 +123,7 @@ def main():
     if len(msgs) > 0:
         writepickle([max_of_probs, max_of_liquids, datetime.datetime.now()], state_file) #save state of the last alert
         logger.info(f'sending msgs {msgs}')
-        requests.post(slack_webhook, json={"text": str(msgs)})
+        requests.post(slack_webhook, json={"text": 'LAMBDA' + str(msgs)})
         mystring = ''
         for line in forecast:
             mystring += line + '\n'
@@ -128,15 +132,15 @@ def main():
     else:
         m = f'Not much going on for rain or no change {max_of_probs}% for {max_of_liquids} inches'
         logger.info(m)
-        if logger.isEnabledFor(logging.DEBUG):
+        '''if logger.isEnabledFor(logger.DEBUG):
             requests.post(slack_webhook, json={"text": m})
 
             mystring = ''
             for line in forecast:
                 mystring += line + '\n'
             requests.post(slack_webhook, json={"text": mystring})
-            logger.debug(mystring)
+            logger.debug(mystring)'''
 
 if __name__ == "__main__":
-    logzero.loglevel(logging.INFO)
+    #logzero.loglevel(logger.INFO)
     main()

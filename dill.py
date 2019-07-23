@@ -1,22 +1,22 @@
 #system libraries
 import pickle
+import boto3
 
 #third party
-from logzero import logger
+#from logzero import logger
 #from loguru import logger
 
 def writepickle(data, filename):
-    with open(filename, 'wb') as f:
-        # Pickle the 'data' dictionary using the highest protocol available.
-        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+    s3 = boto3.client('s3')
+    serializedListObject = pickle.dumps(data)
+    s3.put_object(Bucket='weather-lambda-myapp',Key=filename,Body=serializedListObject)
 
 def readpickle(filename):
     try:
-        with open(filename, 'rb') as f:
-            # The protocol version used is detected automatically, so we do not
-            # have to specify it.
-            data = pickle.load(f)
-        return data
+        s3 = boto3.client('s3')
+        object = s3.get_object(Bucket='weather-lambda-myapp',Key=filename)
+        serializedObject = object['Body'].read()
+        myList = pickle.loads(serializedObject)
+        return myList
     except:
-        logger.debug(f'file {filename} does not exist')
         return None
