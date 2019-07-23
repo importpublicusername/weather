@@ -1,5 +1,3 @@
-import botocore.vendored.requests as requests
-
 #system libraries
 import configparser
 from statistics import mean
@@ -7,11 +5,6 @@ import datetime
 import logging
 logger = logging.getLogger()
 logger.setLevel(20)
-
-#third party
-#import requests
-#import logzero
-#from logzero import logging
 
 #local file
 from dill import writepickle
@@ -25,6 +18,10 @@ urlfuture_base = 'https://dataservice.accuweather.com/forecasts/v1/hourly/12hour
 postalcode =  accuweatherconfig['postalcode']
 apikey = accuweatherconfig['apikey']
 locations_url = f'https://dataservice.accuweather.com/locations/v1/postalcodes/search?apikey={apikey}&q={postalcode}'
+mode = accuweatherconfig['mode']
+
+#TODO - this is deprecated and needs to be replaced...what is equiv that can be used local and lambda
+import botocore.vendored.requests as requests
 
 slack_webhook = config._sections['slack']['webhook']
 
@@ -45,14 +42,14 @@ def checkrain(max_of_probs, max_of_liquids):
         msg = f'It is bone dry out there for the next 12 hours at least'
         logger.info(msg)
         msgs.append(msg)
-        writepickle(None, state_file)
+        writepickle(None, state_file, mode)
     else:
         logger.debug(f'not likely for rain in next 12 hours {max_of_probs}')
-        writepickle(None, state_file)
+        writepickle(None, state_file, mode)
     return msgs
 
 def getlocation():
-    locationstate = readpickle(state_location)
+    locationstate = readpickle(state_location, mode)
     logger.debug(str(locationstate))
     if locationstate and postalcode == locationstate['postalcode']:
         logger.debug('saved value is same as configured value, no lookup needed')
@@ -63,7 +60,7 @@ def getlocation():
         locationcode = requests.get(locations_url).json()[0]['Key']
         loc_state = {'postalcode': postalcode, 'locationcode': locationcode}
         logger.debug('new location {}', loc_state)
-        writepickle(loc_state, state_location)
+        writepickle(loc_state, state_location, mode)
         return locationcode
 
 def main():
@@ -72,7 +69,7 @@ def main():
     urlfuture = urlfuture_base + locationcode
     r = requests.get(urlfuture+f'?apikey={apikey}&details=true')
     results12hr = r.json()
-    state = readpickle(state_file)
+    state = readpickle(state_file, mode)
 
     listofprobs = [] #PrecipitationProbability
     liquids = [] #TotalLiquid
@@ -121,7 +118,7 @@ def main():
     logger.debug(f'msgs {msgs}')
 
     if len(msgs) > 0:
-        writepickle([max_of_probs, max_of_liquids, datetime.datetime.now()], state_file) #save state of the last alert
+        writepickle([max_of_probs, max_of_liquids, datetime.datetime.now()], state_file, mode) #save state of the last alert
         logger.info(f'sending msgs {msgs}')
         requests.post(slack_webhook, json={"text": 'LAMBDA' + str(msgs)})
         mystring = ''
@@ -142,5 +139,4 @@ def main():
             logger.debug(mystring)'''
 
 if __name__ == "__main__":
-    #logzero.loglevel(logger.INFO)
     main()
