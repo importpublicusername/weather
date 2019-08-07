@@ -1,11 +1,15 @@
 Weather alerts to Slack
 
+Checks for rain probability and wind speed over 12 hours.
+
 Implementation:
 make a config.txt file like this ---
 
 [accuweather]
 apikey = insert_your_api_key
 postalcode = 90210
+mode = local
+#mode = lambda (will expect s3 access to store state files)
 
 [slack]
 webhook = https://hooks.slack.com/services/your_url_info_here
