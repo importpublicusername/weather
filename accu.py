@@ -21,8 +21,11 @@ apikey = accuweatherconfig['apikey']
 locations_url = f'https://dataservice.accuweather.com/locations/v1/postalcodes/search?apikey={apikey}&q={postalcode}'
 mode = accuweatherconfig['mode']
 
-#TODO - this is deprecated and needs to be replaced...what is equiv that can be used local and lambda
-import botocore.vendored.requests as requests
+if mode == 'lambda':
+    #TODO - this is deprecated and needs to be replaced...what is equiv that can be used local and lambda
+    import botocore.vendored.requests as requests
+else:
+    import requests
 
 slack_webhook = config._sections['slack']['webhook']
 
